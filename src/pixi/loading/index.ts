@@ -1,15 +1,19 @@
-import { Container, Graphics, GraphicsContext } from "pixi.js";
+import { Container, Graphics, GraphicsContext, Ticker } from "pixi.js";
 import { pixiApp } from "../pixiInstance";
 import { AnimLerp } from "../../utils/animations/animLerp";
 import { toRadians } from "../../utils/math";
+
+const fadeInSecDuration = 0.5;
+const fadeOutSecDuration = 0.5;
 
 export const loadingScene = () => {
   let centerX = pixiApp.canvas.width / 2;
   let centerY = pixiApp.canvas.height / 2;
 
-  const alphaLerp = new AnimLerp(2);
-
-  let opacity = 0.0;
+  //animation stuff
+  const alphaLerp = new AnimLerp(fadeInSecDuration);
+  let alphaMode = 0;
+  let opacity = 0;
 
   const spinnerContainer = new Container();
   spinnerContainer.x = centerX;
@@ -35,47 +39,46 @@ export const loadingScene = () => {
   const formula = (x: number) => {
     return 1 / (1 + Math.pow(x / (1 - x), -2.5));
   };
-  pixiApp.ticker.add((d) => {
+  //start the animation timer
+  alphaLerp.start();
+
+  const loadingAnim = (d: Ticker) => {
+    //create a variable that loops between 0 - 1 on a time based interval
     elapsed += d.deltaTime;
     t += d.deltaTime / 120;
     if (t > 1) {
       t = 0 + (t - Math.floor(t));
     }
-    // console.log(t, y);
+
+    //spin each circle around the center
     spinnerContainer.children.forEach((child, i) => {
+      //get a looping time variable so we can keep a loading anim
       y = i / 10 + t;
       if (y > 1) y = 0 + (y - Math.floor(y));
+      //get the curve value so it has some character
       y = formula(y);
-      //   child.scale.set((y + i + 1) / (iRepeat + 1));
-      child.x = Math.sin(y * 2 * Math.PI + Math.PI) * 20; // Set the x position of the duplicate
-      child.y = Math.cos(y * 2 * Math.PI + Math.PI) * 20; // Set the y position of the duplicate
-      //   child.rotation += 0.1 * delta * (i + 1);
+      //set the position of the child based on the curve
+      child.x = Math.sin(y * 2 * Math.PI + Math.PI) * 20; // Set the x position of the child
+      child.y = Math.cos(y * 2 * Math.PI + Math.PI) * 20; // Set the y position of the child
     });
-    if (opacity < 1) {
-      opacity += d.deltaTime / 100;
-    } else opacity = 1;
-    spinnerContainer.alpha = opacity;
 
-    // spinnerContainer.angle += 0.1 * delta;
-    // spinnerContainer.rotation += 0.1 * delta;
-  });
+    //fade in and fade out animation
+    if (alphaMode === 0) {
+      opacity = alphaLerp.lerp(0, 1);
+      spinnerContainer.alpha = opacity;
+    } else if (alphaMode == 1)
+      spinnerContainer.alpha = alphaLerp.lerp(opacity, 0);
+  };
+
+  pixiApp.ticker.add(loadingAnim);
+
+  const removeCB = async () => {
+    alphaLerp.startFromT(1 - opacity, fadeOutSecDuration);
+    alphaMode = 1;
+    await new Promise((resolve) => setTimeout(resolve, alphaLerp.duration));
+    pixiApp.ticker.remove(loadingAnim);
+    return true;
+  };
+
+  return removeCB;
 };
-
-// let startValue = 0; // starting value
-// let endValue = 100; // ending value
-// let duration = 2; // duration in seconds
-
-// let currentValue = startValue; // current value
-// let elapsedTime = 0; // elapsed time
-
-// pixiApp.ticker.add((delta) => {
-//   elapsedTime += delta.deltaTime / 1000; // convert delta time to seconds
-
-//   if (elapsedTime >= duration) {
-//     currentValue = endValue; // reached the end value
-//   } else {
-//     currentValue = lerp(startValue, endValue, elapsedTime / duration); // interpolate between start and end values
-//   }
-
-//   // use the currentValue for whatever you need
-// });

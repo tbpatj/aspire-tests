@@ -23,9 +23,10 @@ export const initPixi = async (id = "renderer") => {
 
     //load the loading bundle screen
     //   const result = await Assets.loadBundle("loading");
-    loadingScene();
-    //   //tell what we need to load first
-    //   Assets.loadBundle(["staff"]);
+    const rCB = loadingScene();
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    //wait to remove the loading screen animation
+    await rCB();
 
     //   pixiApp.ticker.add((ticker) => {
     //     pixiElapsed += ticker.deltaTime;
