@@ -1,0 +1,30 @@
+{
+  "bundles": [
+    {
+      "name": "loading",
+      "assets": [
+        {
+          "alias": "aspire-logo",
+          "src": "public/aspire-logo.png"
+        }
+      ]
+    },
+    {
+      "name": "staff",
+      "assets": [
+        {
+          "alias": "note",
+          "src": "note.png"
+        },
+        {
+          "alias": "treble-clef",
+          "src": "treble-clef.png"
+        },
+        {
+          "alias": "bass-clef",
+          "src": "bass-clef.png"
+        }
+      ]
+    }
+  ]
+}
