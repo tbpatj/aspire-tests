@@ -79,6 +79,18 @@ export class AnimLerp {
   }
 
   /**
+   * a function to get a value of t based on how much time has passed since the start of the animation 0 being no time passed since, and 1 being the duration has been reached
+   * @param capped - a varaible to determine if the t value should be capped at 1 default is true
+   * @returns a value of t based on how much time has passed since the start of the animation if capped it goes from 0 - 1
+   */
+  getT(capped: boolean = true) {
+    this.elapse();
+    this.t = this.elapsed / this.duration;
+    if (capped && this.t > 1) this.t = 1;
+    return this.t;
+  }
+
+  /**
    * calculates a lerp where t is how much time has passed since the class's start time
    * @param num1 - the start value of the lerp
    * @param num2 - the end value of the lerp

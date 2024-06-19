@@ -77,6 +77,7 @@ export const loadingScene = () => {
     alphaMode = 1;
     await new Promise((resolve) => setTimeout(resolve, alphaLerp.duration));
     pixiApp.ticker.remove(loadingAnim);
+    pixiApp.stage.removeChild(spinnerContainer);
     return true;
   };
 
