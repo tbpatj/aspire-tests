@@ -12,6 +12,6 @@
     "resolveJsonModule": true,
     "esModuleInterop": true
   },
-  "include": ["src/**/*.ts", "node_modules/@types"],
+  "include": ["src/**/*.ts", "node_modules/@types", "src/global.d.ts"],
   "exclude": [".git", "node_modules"]
 }
