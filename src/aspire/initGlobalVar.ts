@@ -1,7 +1,7 @@
 import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import { GlobalAspire, OSMDControls } from "../resources/global-resource";
 import { initOSMD } from "./initOsmdFuncs";
-import { initLoop } from "../osmd-renderer/loop";
+import { initLoop } from "./osmd/loop";
 
 export const initAspire = async () => {
   //create a default object for the global variable

@@ -1,5 +1,5 @@
-import { DectectorNote } from "../resources/detectorNote-resouce";
-import { lerp } from "../utils/math";
+import { DectectorNote } from "../../resources/detectorNote-resouce";
+import { lerp } from "../../utils/math";
 import { updateTiming } from "./updateTiming";
 
 const addCurNotes = () => {

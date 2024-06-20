@@ -1,6 +1,3 @@
-import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
-import { GlobalAspire, OSMDControls } from "../resources/global-resource";
-import { updateTiming } from "../osmd-renderer/updateTiming";
 import { setSVGNoteColor } from "./osmd/noteColor";
 
 export const initOSMD = async () => {
