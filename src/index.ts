@@ -1,9 +1,37 @@
-import { Note, OpenSheetMusicDisplay, VoiceEntry } from "opensheetmusicdisplay";
+import { OpenSheetMusicDisplay, Pitch } from "opensheetmusicdisplay";
 import { initPixi } from "./pixi/pixiInstance";
 import { convertMusicXML } from "./utils/musicxaml";
+import * as Tone from "tone";
 
+let detector: DectectorNote[] = [];
+
+interface DectectorNote {
+  svg: any;
+  isRest?: boolean;
+  pitch?: Pitch;
+  timing?: number;
+}
+
+let playing = false;
+
+const song_loc = "/public/musicxml/rhythm_practice.mxl";
+
+const timingConstant = 3000;
 document.addEventListener("DOMContentLoaded", (event) => {
   const main = async () => {
+    //create a synth and connect it to the main output (your speakers)
+    const synth = new Tone.PolySynth(Tone.Synth).toDestination();
+    const element = document.getElementById("start-button");
+    element?.addEventListener("click", () => {
+      if (playing) {
+        playing = false;
+      } else {
+        Tone.start();
+        tStart = Date.now();
+        updateTiming(0, 0);
+        playing = true;
+      }
+    });
     // initPixi();
     // console.log(musicXmlUrl);
     // const response = await fetch("public/musicxml/chant/Chant.musicxml");
@@ -13,71 +41,23 @@ document.addEventListener("DOMContentLoaded", (event) => {
     let osmd = new OpenSheetMusicDisplay("music-container");
 
     const setCursorNoteGreen = () => {
-      for (
-        let i = 0;
-        i < osmd.Cursor.Iterator.CurrentVoiceEntries[0].Notes.length;
-        i++
-      ) {
-        const notes = osmd.cursor?.GNotesUnderCursor()?.[0];
-        const staves = osmd.cursor?.GNotesUnderCursor();
-        console.log(staves);
+      const notes = osmd.cursor?.GNotesUnderCursor();
+      for (let i = 0; i < notes.length; i++) {
+        const note = notes[i];
         //@ts-ignore
-        const svgEl = notes?.getSVGGElement();
-        //@ts-ignore
-        const svgEl2 = svgEl?.children?.[0]?.children?.[0]?.children?.[0];
-        const svgEl3 = svgEl?.children?.[0]?.children?.[1]?.children?.[0];
-        if (svgEl2) {
-          svgEl2.style.stroke = "#FF0000"; // stem
-          svgEl2.style.fill = "#FF0000"; // notehead
+        const svgEl = note?.getSVGGElement();
+        setSVGElementToColor(svgEl, "green");
+      }
+    };
+
+    const setSVGElementToColor = (svg: any, color: string) => {
+      const childExplorer = svg?.children?.[0]?.children;
+      for (let i = 0; i < childExplorer.length; i++) {
+        const editSvg = childExplorer[i]?.children?.[0];
+        if (editSvg) {
+          editSvg.style.stroke = color; // stem
+          editSvg.style.fill = color; // notehead
         }
-        if (svgEl3) {
-          svgEl3.style.stroke = "#FF0000"; // stem
-          svgEl3.style.fill = "#FF0000"; // notehead
-        }
-        // try {
-        //   const mI = osmd.Cursor.Iterator.CurrentMeasureIndex;
-        //   console.log(osmd.Cursor);
-        //   const graphicalNote =
-        //     osmd.GraphicSheet.MeasureList[mI][0].staffEntries[1]
-        //       .graphicalVoiceEntries[0].notes[0];
-        //   // console.log(graphicalNote);
-        //   // console.log(graphicalNote.getSVGGElement());
-        //   //@ts-ignore
-        //   const ele = graphicalNote.getSVGGElement();
-        //   const ele2 = ele.children[0].children[0].children[0];
-        //   // console.log(ele2.style.fill);
-        //   // console.log(ele2);
-        //   ele2.style.fill = "#FF0000";
-        //   ele2.style.stroke = "#FF0000";
-        //   //@ts-ignore
-        //   // graphicalNote.getSVGGElement().children[0].children[0].children[0].style.fill =
-        //   //   "#FF0000";
-        // } catch (e) {
-        //   console.log(e);
-        // }
-        // console.log(osmd.Cursor.Iterator.CurrentVoiceEntries[0].Notes[i]);
-        // osmd.Cursor.Iterator.CurrentVoiceEntries[0].Notes[i].NoteheadColor =
-        //   "green";
-        // for (
-        //   let t = 0;
-        //   t <
-        //   //@ts-ignore
-        //   osmd.Cursor.Iterator.CurrentVoiceEntries[0].Notes[0]?.beam?.notes
-        //     ?.length;
-        //   t++
-        // ) {
-        //   console.log(
-        //     //@ts-ignore
-        //     osmd.Cursor.Iterator.CurrentVoiceEntries[0].Notes[0]?.beam?.notes?.[
-        //       t
-        //     ]
-        //   );
-        //   //@ts-ignore
-        //   osmd.Cursor.Iterator.CurrentVoiceEntries[0].Notes[0]?.beam?.notes?.[
-        //     t
-        //   ].NoteheadColor = "green";
-        // }
-        osmd.Cursor.Iterator.CurrentVoiceEntries[0].Notes[i];
       }
     };
 
@@ -85,29 +65,73 @@ document.addEventListener("DOMContentLoaded", (event) => {
     let tStart = Date.now();
     let nextElapsed = 0;
 
-    const loop = () => {
-      console.log("looping");
-      if (Date.now() - tStart > nextElapsed) {
-        // osmd.render();
-        setCursorNoteGreen();
-        osmd.cursor.next();
-        const current = osmd.Cursor.iterator.currentTimeStamp.RealValue;
-        const t =
-          osmd.Cursor.Iterator.CurrentVoiceEntries[0].Notes[0]
-            .NoteToGraphicalNoteObjectId;
-        // console.log(osmd.Cursor.iterator.currentTimeStamp);
-        // console.log(osmd.Cursor.Iterator.CurrentSourceTimestamp);
-        // console.log(osmd.Cursor.Iterator.CurrentEnrolledTimestamp);
-        // console.log(osmd.Cursor.Iterator.CurrentRelativeInMeasureTimestamp);
+    const updateTiming = (currentT: number, nextT: number) => {
+      const check = nextT - currentT;
+      const overdraw = Date.now() - tStart - nextElapsed;
+      nextElapsed = check * timingConstant;
+      tStart = Date.now() - overdraw;
+    };
 
-        osmd.cursor.next();
-        const next = osmd.Cursor.Iterator.currentTimeStamp.RealValue;
-        const check = next - current;
-        const overdraw = Date.now() - tStart - nextElapsed;
-        console.log(check, overdraw);
-        nextElapsed = check * 2000;
-        tStart = Date.now() - overdraw;
-        osmd.cursor.previous();
+    const addCurNotes = () => {
+      const notes = osmd.cursor?.GNotesUnderCursor();
+      for (let i = 0; i < notes.length; i++) {
+        const note = notes[i].sourceNote;
+        //@ts-ignore
+        const svgEl = notes[i]?.getSVGGElement?.();
+        const dNote: DectectorNote = {
+          svg: svgEl,
+          //@ts-ignore
+          isRest: note.isRestFlag,
+          pitch: note.Pitch,
+          timing: Date.now() + note.Length.RealValue * timingConstant,
+        };
+        if (dNote?.pitch?.Frequency) {
+          const now = Tone.now();
+          synth.triggerAttackRelease(
+            Math.floor(dNote.pitch.Frequency),
+            note.Length.RealValue * timingConstant,
+            now
+          );
+        }
+        detector.push(dNote);
+      }
+    };
+
+    const processNotes = () => {
+      const release = [];
+
+      for (let i = 0; i < detector.length; i++) {
+        const note = detector[i];
+        if (note.timing < Date.now()) {
+          if (note?.pitch?.Frequency > 350)
+            setSVGElementToColor(note.svg, "blue");
+          else setSVGElementToColor(note.svg, "red");
+
+          if (note?.pitch?.Frequency) {
+            release.push(Math.floor(note?.pitch?.Frequency));
+          }
+          detector.splice(i, 1);
+        }
+      }
+      const now = Tone.now();
+      synth.triggerRelease(release, now);
+    };
+
+    const loop = () => {
+      console.log("loop");
+      if (playing) {
+        if (Date.now() - tStart > nextElapsed) {
+          // osmd.render();
+          // setCursorNoteGreen();
+          osmd.cursor.next();
+          const currentT = osmd.Cursor.iterator.currentTimeStamp.RealValue;
+          osmd.cursor.next();
+          const nextT = osmd.Cursor.Iterator.currentTimeStamp.RealValue;
+          updateTiming(currentT, nextT);
+          osmd.cursor.previous();
+          addCurNotes();
+        }
+        processNotes();
       }
       if (looping) requestAnimationFrame(loop);
     };
@@ -117,10 +141,16 @@ document.addEventListener("DOMContentLoaded", (event) => {
       drawTitle: true,
       // drawingParameters: "compacttight" // don't display title, composer etc., smaller margins
     });
-    osmd.load("/public/musicxml/rhythm_practice.mxl").then(function () {
+    osmd.load(song_loc + "").then(function () {
       osmd.render();
+      console.log("here");
       osmd.cursor.show();
-      loop();
+      setTimeout(() => {
+        // Code to be executed after 3 seconds
+        tStart = Date.now();
+        updateTiming(0, osmd.Cursor.iterator.currentTimeStamp.RealValue);
+        loop();
+      }, 3000);
     });
   };
 
