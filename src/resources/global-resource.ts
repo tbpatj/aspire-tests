@@ -8,6 +8,8 @@ export interface GlobalAspire {
   audio: AudioControls;
   loop: AspireLoop;
   detector: AspireDetector;
+  test?: TestStuff;
+  myCursor: MyCursor;
 }
 
 export interface OSMDControls {
@@ -34,4 +36,17 @@ export interface AspireLoop {
 
 export interface AspireDetector {
   detecting: DectectorNote[];
+  score: number;
+  lastFrameTime: number;
+}
+
+export interface TestStuff {
+  scoreElem: HTMLElement;
+  // myCursor: HTMLElement;
+}
+
+export interface MyCursor {
+  elem: HTMLElement;
+  curPos: DOMRect;
+  nextPos: DOMRect;
 }

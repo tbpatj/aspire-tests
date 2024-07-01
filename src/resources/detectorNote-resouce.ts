@@ -6,4 +6,5 @@ export interface DectectorNote {
   pitch?: Pitch;
   timing?: number;
   duration?: number;
+  score: number;
 }

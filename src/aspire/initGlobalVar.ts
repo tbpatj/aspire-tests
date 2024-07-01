@@ -36,6 +36,16 @@ export const initAspire = async () => {
     },
     detector: {
       detecting: [],
+      score: 0,
+      lastFrameTime: Date.now(),
+    },
+    test: {
+      scoreElem: undefined,
+    },
+    myCursor: {
+      elem: undefined,
+      curPos: new DOMRect(),
+      nextPos: new DOMRect(),
     },
   } as GlobalAspire;
 
